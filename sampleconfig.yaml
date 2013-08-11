@@ -1,0 +1,22 @@
+# static fields are here
+'api': '0.13'
+'contact':
+  'email': 'info@hackerspace-krk.pl'
+  'facebook': 'HackerspaceKrakow'
+  'ml': 'hackerspace-krk@googlegroups.com'
+  'phone': '+48123830151'
+  'twitter': '@hackerspace_krk'
+#'icon':
+#  'closed': false
+#  'open': false
+'issue_report_channels': ['email']
+'location':
+  'address': "Radziwiłłowska 20/2, 31-026 Kraków, Poland"
+  'lat': 19.946815
+  'lon': 50.063116
+'logo': 'http://hackerspace-krk.pl/wp-content/themes/hskrk/images/logo.png'
+'space': 'Hackerspace KRK'
+'state': {'open': null} # filled from whois!
+'url': 'http://hackerspace-krk.pl'
+'projects':
+   - 'https://github.com/HackerspaceKRK/'
