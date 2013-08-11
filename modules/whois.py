@@ -1,4 +1,5 @@
 __version__ = 1.0
+__cacheable__ = True
 
 import urllib
 import json
@@ -11,12 +12,20 @@ def update_document(data):
 
 	if config.get('module_whois', 'overwrite_open'):
 		data['state'] = {'open': len(whois_data['users']) > 0}
-		
-	data['sensors'] = {'people_now_present': [{
+	
+	if not data.get('sensors'):
+		data['sensors'] = {}
+
+	if not data['sensors'].get('people_now_present'):
+		data['sensors']['people_now_present'] = []
+
+	people_data = {
 		'value': len(whois_data['users'])
-	}]}
+	}
 
 	if len(whois_data['users']) > 0:
-		data['sensors']['people_now_present'][0]['names'] = whois_data['users']
+		people_data['names'] = whois_data['users']
+
+	data['sensors']['people_now_present'].append(people_data)
 
 	return data

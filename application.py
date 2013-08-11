@@ -21,6 +21,7 @@ import web
 import sys
 import json
 import yaml
+import time
 import ConfigParser
 
 config = ConfigParser.ConfigParser()
@@ -32,6 +33,24 @@ with file(config.get('data', 'file'), 'r') as f:
 
 yamldata = yaml.load(yamldata)
 
+# caching... we will pass "fake" data array and see what it changed...
+# and merge added items every time
+def caching_function(original_update_document, cache_time):
+	def inside_function(data):
+		curr_time = time.time()
+		if inside_function.last_cache < curr_time:
+			inside_function.cached_data = original_update_document({})
+			inside_function.last_cache = curr_time + cache_time
+
+		data.update(inside_function.cached_data)
+
+		return data
+
+	inside_function.cached_data = {}
+	inside_function.last_cache = 0
+
+	return inside_function
+
 def main():
 	web.config.debug = config.getboolean('application', 'debug')
 
@@ -40,16 +59,30 @@ def main():
 		if config.getboolean('modules', module_name):
 			try:
 				__import__('modules.%s' % module_name)
-				function_pointer = getattr(sys.modules['modules.%s' % module_name], 'update_document')
+				module = sys.modules['modules.%s' % module_name]
+				function_pointer = getattr(module, 'update_document')
 
 				if not callable(function_pointer):
 					print 'WARNING: modules.%s.update_document is not callable!' % module_name
 					continue
 
+				try:
+					cache_time = config.getint('module_cache', module_name)
+
+					if cache_time:
+						try:
+							if not getattr(module, 'update_document', '__cacheable__'):
+								print 'WARNING: module "%s" is not cacheable but caching enabled in config file... This can result in big boom!'
+						except exceptions.AttributeError:
+							print 'WARNING: module "%s" does not have __cacheable__ flag...'
+
+						function_pointer = caching_function(function_pointer, cache_time)
+				except ConfigParser.NoOptionError:
+					pass
+
 				modules_enabled[module_name] = function_pointer
 			except ImportError as e:
-				print 'WARNING: Can not import module "%s": %s' % (module_name, str(e))
-				pass
+				print 'WARNING: can not import module "%s": %s' % (module_name, str(e))
 
 	print 'Loaded modules: %s\n' % ', '.join(modules_enabled.keys())
 
@@ -63,7 +96,7 @@ def main():
 					new_data = function_pointer(data)
 					data = new_data
 				except Exception as e:
-					print 'Module "%s" failed: %s' % (module_name, str(e))				
+					print 'WARNING: module "%s" failed: %s' % (module_name, str(e))				
 
 			web.header('Content-Type', 'application/json')
 			return json.dumps(data)
