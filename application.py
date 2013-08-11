@@ -47,14 +47,15 @@ def main():
 					continue
 
 				modules_enabled[module_name] = function_pointer
-			except ImportError:
+			except ImportError as e:
+				print 'WARNING: Can not import module "%s": %s' % (module_name, str(e))
 				pass
 
-	print 'Loaded modules: %s\n' % ','.join(modules_enabled.keys())
+	print 'Loaded modules: %s\n' % ', '.join(modules_enabled.keys())
 
 	class index:
 		def GET(self):
-			data = yamldata
+			data = yamldata.copy()
 
 			for module_name, function_pointer in modules_enabled.iteritems():
 				new_data = None
