@@ -99,6 +99,8 @@ def main():
 					print 'WARNING: module "%s" failed: %s' % (module_name, str(e))				
 
 			web.header('Content-Type', 'application/json')
+			web.header('Access-Control-Allow-Origin', '*')
+			web.header('Cache-Control', 'no-cache')
 			return json.dumps(data)
 
 	urls = (
