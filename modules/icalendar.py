@@ -26,10 +26,10 @@ def update_document(data):
 			continue
 
 		data['events'].append({
-			'name': event.vevent.summary.valueRepr(),
+			'name': event.vevent.summary.value,
 			'type': 'calendarevent',
 			'timestamp': int(time.mktime((event.vevent.dtstart.value.timetuple()))),
-			'extra': event.vevent.description.valueRepr(),
+			'extra': event.vevent.description.value,
 		})
 
 	remote.close()
