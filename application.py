@@ -35,28 +35,34 @@ yamldata = yaml.load(yamldata)
 def main():
 	web.config.debug = config.getboolean('application', 'debug')
 
-	modules_enabled = []
+	modules_enabled = {}
 	for module_name, enabled in config.items('modules'):
 		if config.getboolean('modules', module_name):
 			try:
 				__import__('modules.%s' % module_name)
-				modules_enabled.append(module_name)
+				function_pointer = getattr(sys.modules['modules.%s' % module_name], 'update_document')
+
+				if not callable(function_pointer):
+					print 'WARNING: modules.%s.update_document is not callable!' % module_name
+					continue
+
+				modules_enabled[module_name] = function_pointer
 			except ImportError:
 				pass
 
-	print 'Loaded modules: %s\n' % ','.join(modules_enabled)
+	print 'Loaded modules: %s\n' % ','.join(modules_enabled.keys())
 
 	class index:
 		def GET(self):
 			data = yamldata
 
-			for m in modules_enabled:
+			for module_name, function_pointer in modules_enabled.iteritems():
 				new_data = None
 				try:
-					new_data = getattr(sys.modules['modules.%s' % m], 'update_document')(data)
+					new_data = function_pointer(data)
 					data = new_data
 				except Exception as e:
-					print 'Module "%s" failed: %s' % (m, str(e))				
+					print 'Module "%s" failed: %s' % (module_name, str(e))				
 
 			web.header('Content-Type', 'application/json')
 			return json.dumps(data)
