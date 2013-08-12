@@ -106,8 +106,13 @@ def main():
 		'/', index,
 	)
 
-	app = web.application(urls, globals())
-	app.run()
+	class MyApplication(web.application):
+		def run(self, port=8080, *middleware):
+			func = self.wsgifunc(*middleware)
+			return web.httpserver.runsimple(func, ('0.0.0.0', int(port)))
+
+	app = MyApplication(urls, globals())
+	app.run(port=os.environ.get('PORT', 8080))
 
 if __name__ == '__main__':
 	main()
