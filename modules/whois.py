@@ -1,12 +1,12 @@
 __version__ = 1.0
 __cacheable__ = True
 
-import urllib
+import urllib2
 import json
 from application import config
 
 def update_document(data):
-	remote = urllib.urlopen(config.get('module_whois', 'url'))
+	remote = urllib2.urlopen(config.get('module_whois', 'url'), timeout=1)
 
 	whois_data = json.loads(remote.read())
 

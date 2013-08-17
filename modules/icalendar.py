@@ -1,7 +1,7 @@
 __version__ = 1.0
 __cacheable__ = True
 
-import urllib
+import urllib2
 import json
 import vobject
 import datetime
@@ -9,7 +9,7 @@ import time
 from application import config
 
 def update_document(data):
-	remote = urllib.urlopen(config.get('module_icalendar', 'url'))
+	remote = urllib2.urlopen(config.get('module_icalendar', 'url'), timeout=1)
 
 	current_date = datetime.datetime.now()
 
