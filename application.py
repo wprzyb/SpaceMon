@@ -22,6 +22,7 @@ import sys
 import json
 import yaml
 import time
+import copy
 import ConfigParser
 
 config = ConfigParser.ConfigParser()
@@ -88,7 +89,7 @@ def main():
 
 	class index:
 		def GET(self):
-			data = yamldata.copy()
+			data = copy.deepcopy(yamldata)
 
 			for module_name, function_pointer in modules_enabled.iteritems():
 				new_data = None

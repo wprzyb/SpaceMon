@@ -8,8 +8,10 @@ import datetime
 import time
 from application import config
 
+CONFIG_KEY = 'module_icalendar'
+
 def update_document(data):
-	remote = urllib2.urlopen(config.get('module_icalendar', 'url'), timeout=1)
+	remote = urllib2.urlopen(config.get(CONFIG_KEY, 'url'), timeout=config.getint(CONFIG_KEY, 'timeout'))
 
 	current_date = datetime.datetime.now()
 
