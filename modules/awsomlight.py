@@ -30,7 +30,6 @@ def update_document(data):
 		if not data.get('state'):
 			data['state'] = {}
 
-		print is_open, data['state'].get('open', False), id(data['state']), id(data)
 		data['state']['open'] = is_open or data['state'].get('open', False)
 
 
