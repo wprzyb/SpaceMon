@@ -24,6 +24,7 @@ import yaml
 import time
 import copy
 import ConfigParser
+from copy import deepcopy
 
 config = ConfigParser.ConfigParser()
 config.read(('config.cfg', 'localconfig.cfg'))
@@ -34,6 +35,19 @@ with file(config.get('data', 'file'), 'r') as f:
 
 yamldata = yaml.load(yamldata)
 
+def dict_merge(a, b):
+	if not isinstance(b, dict):
+		return b
+
+	result = deepcopy(a)
+	for k, v in b.iteritems():
+		if k in result and isinstance(result[k], dict):
+			result[k] = dict_merge(result[k], v)
+		else:
+			result[k] = deepcopy(v)
+
+	return result
+
 # caching... we will pass "fake" data array and see what it changed...
 # and merge added items every time
 def caching_function(original_update_document, cache_time):
@@ -43,9 +57,12 @@ def caching_function(original_update_document, cache_time):
 			inside_function.cached_data = original_update_document({})
 			inside_function.last_cache = curr_time + cache_time
 
-		data.update(inside_function.cached_data)
+		newdata = dict_merge(data, inside_function.cached_data)
 
-		return data
+		if config.getboolean('module_cache', 'or_state_open') and data.get('state', {'open': False}).get('open', False): # some module set it as OPEN, so it must remain OPEN
+			newdata['state']['open'] = True
+
+		return newdata
 
 	inside_function.cached_data = {}
 	inside_function.last_cache = 0
