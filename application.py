@@ -17,7 +17,6 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import web
 import sys
 import json
 import yaml
@@ -25,6 +24,8 @@ import time
 import copy
 import ConfigParser
 from copy import deepcopy
+from threading import Thread
+from bottle import route, run, response
 
 config = ConfigParser.ConfigParser()
 config.read(('config.cfg', 'localconfig.cfg'))
@@ -48,31 +49,41 @@ def dict_merge(a, b):
 
 	return result
 
+
 # caching... we will pass "fake" data array and see what it changed...
 # and merge added items every time
-def caching_function(original_update_document, cache_time):
-	def inside_function(data):
-		curr_time = time.time()
-		if inside_function.last_cache < curr_time:
-			inside_function.cached_data = original_update_document({})
-			inside_function.last_cache = curr_time + cache_time
+# now with threading
+class caching_class:
+	def __init__(self, original_update_document, cache_time):
+		self.original_update_document = original_update_document
+		self.cache_time = cache_time
 
-		newdata = dict_merge(data, inside_function.cached_data)
+		self.last_cache = 0
+		self.cached_data = {}
+
+	# merge my data with dict
+	def merge_with_data(self, data):
+		newdata = dict_merge(data, self.cached_data)
 
 		if config.getboolean('module_cache', 'or_state_open') and data.get('state', {'open': False}).get('open', False): # some module set it as OPEN, so it must remain OPEN
 			newdata['state']['open'] = True
 
 		return newdata
 
-	inside_function.cached_data = {}
-	inside_function.last_cache = 0
+	__call__ = merge_with_data
 
-	return inside_function
+	def is_run_needed(self):
+		return self.last_cache < time.time()
+
+	# run real module
+	def run_module(self):
+		self.cached_data = self.original_update_document({})
+		self.last_cache = time.time() + self.cache_time
 
 def main():
-	web.config.debug = config.getboolean('application', 'debug')
-
 	modules_enabled = {}
+	modules_parallel = {}
+
 	for module_name, enabled in config.items('modules'):
 		if config.getboolean('modules', module_name):
 			try:
@@ -94,44 +105,56 @@ def main():
 						except exceptions.AttributeError:
 							print 'WARNING: module "%s" does not have __cacheable__ flag...'
 
-						function_pointer = caching_function(function_pointer, cache_time)
+						function_pointer = caching_class(function_pointer, cache_time)
+
+						modules_parallel[module_name] = function_pointer
 				except ConfigParser.NoOptionError:
 					pass
 
 				modules_enabled[module_name] = function_pointer
+
 			except ImportError as e:
 				print 'WARNING: can not import module "%s": %s' % (module_name, str(e))
 
 	print 'Loaded modules: %s\n' % ', '.join(modules_enabled.keys())
 
-	class index:
-		def GET(self):
-			data = copy.deepcopy(yamldata)
+	@route('/')
+	def index():
+		data = copy.deepcopy(yamldata)
 
-			for module_name, function_pointer in modules_enabled.iteritems():
-				new_data = None
-				try:
-					new_data = function_pointer(data)
-					data = new_data
-				except Exception as e:
-					print 'WARNING: module "%s" failed: %s' % (module_name, str(e))				
+		threads = []
 
-			web.header('Content-Type', 'application/json')
-			web.header('Access-Control-Allow-Origin', '*')
-			web.header('Cache-Control', 'no-cache')
-			return json.dumps(data)
+		# run threads
+		for module_name, function_pointer in modules_parallel.iteritems():
+			if not function_pointer.is_run_needed():
+				continue
 
-	urls = (
-		'/', index,
-	)
+			newt = Thread(None, function_pointer.run_module)
+			newt.start()
 
-	class MyApplication(web.application):
-		def run(self, port=8080, *middleware):
-			func = self.wsgifunc(*middleware)
-			return web.httpserver.runsimple(func, ('0.0.0.0', int(port)))
+			threads.append(newt)
 
-	app = MyApplication(urls, globals())
-	app.run(port=os.environ.get('PORT', 8080))
+		# wait for all to complete
+		for thread_obj in threads:
+			thread_obj.join()
+
+		# will exec modules 
+		# or exec merge for threaded modules
+		for module_name, function_pointer in modules_enabled.iteritems():
+			new_data = None
+			try:
+				new_data = function_pointer(copy.deepcopy(data))
+				data = new_data
+			except Exception as e:
+				print 'WARNING: module "%s" failed: %s' % (module_name, str(e))				
+
+		# response.charset = 'utf8'
+		response.set_header('Content-Type', 'application/json')
+		response.set_header('Access-Control-Allow-Origin', '*')
+		response.set_header('Cache-Control', 'no-cache')
+		return json.dumps(data)
+
+	run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)), debug=config.getboolean('application', 'debug'))
 
 if __name__ == '__main__':
 	main()
