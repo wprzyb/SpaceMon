@@ -152,6 +152,7 @@ def main():
 		response.set_header('Content-Type', 'application/json')
 		response.set_header('Access-Control-Allow-Origin', '*')
 		response.set_header('Cache-Control', 'no-cache')
+		
 		return json.dumps(data)
 
 	run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)), debug=config.getboolean('application', 'debug'))
