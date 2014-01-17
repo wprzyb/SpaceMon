@@ -34,10 +34,12 @@ def update_document(data):
 
 
 	if not data['sensors'].get('ext_lights'):
-		data['sensors']['ext_lights'] = {}
-
+		data['sensors']['ext_lights'] = []
+	
+	lights = {}
 	for key, val in config.items(CONFIG_KEY):
 		if key.startswith('name_'):
-			data['sensors']['ext_lights'][val] = remote[int(key[5:])] == '1'
+			lights[val] = remote[int(key[5:])] == '1'
+	data['sensors']['ext_lights'].append(lights)
 		
 	return data
