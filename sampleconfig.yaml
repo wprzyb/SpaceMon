@@ -12,8 +12,8 @@
 'issue_report_channels': ['email']
 'location':
   'address': "Radziwiłłowska 20/2, 31-026 Kraków, Poland"
-  'lat': 19.946815
-  'lon': 50.063116
+  'lat': 50.063116
+  'lon': 19.946815
 'logo': 'http://hackerspace-krk.pl/wp-content/themes/hskrk/images/logo.png'
 'space': 'Hackerspace KRK'
 'state': {'open': null} # filled from whois!
