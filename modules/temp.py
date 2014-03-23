@@ -20,8 +20,12 @@ def update_document(data):
 	if not data['sensors'].get('temperature'):
 		data['sensors']['temperature'] = []
 
-	data['sensors']['temperature'].append({'value': remote.read()})
-	data['sensors']['temperature'].append({'unit': '°C'})
-	data['sensors']['temperature'].append({'location': 'Inside'})
+	sensor = {
+		'value': float(remote.read()),
+		'unit': '°C',
+		'location': 'Inside',
+	}
+
+	data['sensors']['temperature'].append(sensor)
 
 	return data
