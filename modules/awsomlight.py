@@ -19,8 +19,13 @@ def update_document(data):
 	if config.get(CONFIG_KEY, 'update_open'):
 		is_open = False
 
-		for key, val in remote.items():
-			if val:
+		if config.get(CONFIG_KEY, 'update_open_keys') == '*':
+			keys_which_we_care_about = remote.keys()
+		else:
+			keys_which_we_care_about = config.get(CONFIG_KEY, 'update_open_keys').split(',')
+
+		for key in keys_which_we_care_about:
+			if remote[key]:
 				is_open = True
 				break
 
