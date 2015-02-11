@@ -44,6 +44,8 @@ def dict_merge(a, b):
 	for k, v in b.iteritems():
 		if k in result and isinstance(result[k], dict):
 			result[k] = dict_merge(result[k], v)
+		elif k in result and isinstance(result[k], list):
+			result[k].extend(v)
 		else:
 			result[k] = deepcopy(v)
 
