@@ -30,22 +30,22 @@ def update_document(data):
                                                 
 
 	temp = {
-		'value': float(remote[0]['datapoints'][0][0]),
+		'value': '%.2f' % (float(remote[0]['datapoints'][0][0])),
 		'unit': '°C',
 		'location': 'Hardroom',
 	}
 	pressure = {
-		'value': float(remote[1]['datapoints'][0][0]),
+		'value': '%.2f' % (float(remote[1]['datapoints'][0][0])),
 		'unit': 'hPA',
 		'location': 'Hardroom',
 	}
 	hum = {
-		'value': float(remote[2]['datapoints'][0][0]),
+		'value': '%.2f' % (float(remote[2]['datapoints'][0][0])),
 		'unit': '%',
 		'location': 'Hardroom',
 	}
 	rad = {
-		'value': float(remote[3]['datapoints'][0][0]),
+		'value': '%.2f' % (float(remote[3]['datapoints'][0][0])),
 		'unit': 'µSv/h',
 		'location': 'Hardroom',
 	}
