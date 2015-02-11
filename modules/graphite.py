@@ -8,12 +8,11 @@ import json
 import ConfigParser
 from application import config
 
-CONFIG_KEY = 'module_temp'
+CONFIG_KEY = 'module_graphite'
 
 
 def update_document(data):
-	remote = urllib2.urlopen("http://graphite.at.hskrk.pl/render/?&target=hs.hardroom.*&format=json&maxDataPoints=1&from=-1min", timeout=2)
-#	remote = urllib2.urlopen(config.get(CONFIG_KEY, 'url'), timeout=config.getint(CONFIG_KEY, 'timeout'))
+	remote = urllib2.urlopen(config.get(CONFIG_KEY, 'url'), timeout=config.getint(CONFIG_KEY, 'timeout'))
 	remote = json.load(remote)
 
 	if not data.get('sensors'):
