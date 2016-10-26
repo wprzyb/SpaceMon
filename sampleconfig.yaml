@@ -9,12 +9,12 @@
 #'icon':
 #  'closed': false
 #  'open': false
-'cam': ["http://at.hskrk.pl/static/hardroom.jpeg", "http://at.hskrk.pl/static/softroom.jpeg", "http://at.hskrk.pl/static/korytarz.jpeg", "http://at.hskrk.pl/static/kuchnia.jpeg"]
+'cam': ["http://at.hskrk.pl/static/hardroom.jpeg", "http://at.hskrk.pl/static/softroom.jpeg", "http://at.hskrk.pl/static/korytarz.jpeg", "http://at.hskrk.pl/static/elelab.jpeg"]
 'issue_report_channels': ['email']
 'location':
-  'address': "Radziwiłłowska 20/2, 31-026 Kraków, Poland"
-  'lat': 50.063116
-  'lon': 19.946815
+  'address': "Zacisze 5/P1, 31-156 Kraków, Poland"
+  'lat': 50.066085
+  'lon': 19.943359
 'logo': 'http://hackerspace-krk.pl/wp-content/themes/hskrk/images/logo.png'
 'space': 'Hackerspace KRK'
 'state': {'open': null} # filled from whois!
